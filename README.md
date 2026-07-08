@@ -1,8 +1,16 @@
+![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
+![LightGBM](https://img.shields.io/badge/LightGBM-gradient%20boosting-2C7BB6)
+![GeoPandas](https://img.shields.io/badge/GeoPandas-spatial-139C5A)
+![PySAL](https://img.shields.io/badge/PySAL-Moran's%20I%20%2F%20LISA-orange)
+![SHAP](https://img.shields.io/badge/SHAP-interpretability-8A2BE2)
+![scikit-learn](https://img.shields.io/badge/scikit--learn-CV-F7931E?logo=scikitlearn&logoColor=white)
+![License](https://img.shields.io/badge/License-Apache%202.0-D22128)
+
 # Spatial House-Price Modelling for Greater London
 
 **How much of a house-price model's accuracy is real, and how much is it quietly memorising the neighbourhood it was tested on?**
 
-This project answers that question empirically on ~375,000 real Greater London property transactions (2021 to 2024). It shows that the standard evaluation used in almost every house-price notebook, random k-fold cross-validation, *overstates* generalisation by silently leaking neighbourhood signal, and it measures the size of that illusion with a spatially honest protocol.
+This project answers that question empirically on ~375,000 real Greater London property transactions (2021 to 2024). It shows that the standard evaluation used in almost every house-price notebook, random k-fold cross-validation, *overstates* generalisation by silently leaking neighbourhood signal, and it measures the size of that illusion with a spatially blocked protocol.
 
 The headline result, in one line:
 
@@ -65,10 +73,10 @@ Every area-level and spatial-lag feature is fitted **inside each fold on trainin
 
 Two things jump out:
 
-- **LightGBM drops from 0.70 to 0.38.** The random score is not the model's real skill; roughly half of it was leaked neighbourhood identity. The honest score is still healthily positive, so the model *does* generalise, just far less than random CV claims.
+- **LightGBM drops from 0.70 to 0.38.** The random score is not the model's real skill; roughly half of it was leaked neighbourhood identity. The spatial score is still healthily positive, so the model *does* generalise, just far less than random CV claims.
 - **Spatial kNN goes from 0.62 to -0.72.** A model whose only trick is "look at nearby sales" looks competitive under random CV and becomes *worse than predicting the mean* under spatial CV. It is the purest demonstration of the leak: take its neighbours away and nothing remains.
 
-Notice too that under honest CV, LightGBM (0.384) barely beats Ridge *without* spatial features (0.373): the spatial-lag feature that dominates under random CV loses almost all its value once evaluation is honest. Leaky features are worth what an honest protocol says they are worth.
+Notice too that under spatial CV, LightGBM (0.384) barely beats Ridge *without* spatial features (0.373): the spatial-lag feature that dominates under random CV loses almost all its value under spatial CV. Leaky features are worth what a spatial protocol says they are worth.
 
 ### 3. Where the model is still wrong (residual diagnostics)
 
@@ -79,16 +87,16 @@ If a model had fully captured the spatial surface, its residuals would be spatia
 | random CV | 0.040 | 0.001 |
 | spatial CV | **0.719** | 0.001 |
 
-Under random CV the model absorbs the spatial structure (residual `I ~ 0`), because it was allowed to memorise it. Under honest CV the structure it *couldn't* see resurfaces in the residuals (`I = 0.72`), and the maps show exactly where:
+Under random CV the model absorbs the spatial structure (residual `I ~ 0`), because it was allowed to memorise it. Under spatial CV the structure it *couldn't* see resurfaces in the residuals (`I = 0.72`), and the maps show exactly where:
 
 ![Spatial residual choropleth](reports/figures/residual_choropleth.png)
 ![LISA of residuals](reports/figures/residual_lisa.png)
 
-Red marks where the model systematically under-predicts (central/inner-west London); blue marks systematic over-prediction (east/outer). These are the regions whose price level could only have been learned from neighbours the honest protocol withheld.
+Red marks where the model systematically under-predicts (central/inner-west London); blue marks systematic over-prediction (east/outer). These are the regions whose price level could only have been learned from neighbours the spatial protocol withheld.
 
 ### 4. What drives the model, and how uncertain it is
 
-SHAP on the honestly-fitted LightGBM (explaining the model, **not** causation):
+SHAP on the LightGBM fitted under the spatial protocol (explaining the model, **not** causation):
 
 ![SHAP importance](reports/figures/shap_importance.png)
 ![SHAP dependence for distance-to-CBD](reports/figures/shap_dependence_dist_cbd_m.png)
@@ -176,7 +184,7 @@ src/
               spatial_lag.py       fold-safe SpatialLagTransformer (fit on train only)
   models/     cv.py                random k-fold + KMeans spatial blocks (buffered)
               evaluate.py          the (model x scheme) money table + residual Moran's I
-  interpret/  explain.py           SHAP on the honest fit
+  interpret/  explain.py           SHAP on the spatial fit
               uncertainty.py       conformalised quantile regression
               residual_maps.py     residual choropleth + residual LISA
 tests/        five smoke suites, incl. three fold-safety proofs
@@ -185,11 +193,11 @@ reports/      metrics + figures
 
 ---
 
-## Methodological notes worth an interviewer's attention
+## Design decisions
 
 - **Fold-internal feature fitting.** The spatial lag, scaler, and encoders are re-fit inside every fold on training rows only. This is the single most common, and most invisible, source of spatial leakage.
 - **Contiguous spatial blocks, not a grid.** Blocks are KMeans clusters of LSOA centroids, so each held-out fold is a compact, connected region. The optional 1 km buffer removes training points hugging the fold edge.
-- **Log-price with honest price-scale reporting.** Metrics are computed on log-price; where a mean-based price error is reported, a Duan smearing correction is applied (naively exponentiating log-predictions is biased low).
+- **Log-price with careful price-scale reporting.** Metrics are computed on log-price; where a mean-based price error is reported, a Duan smearing correction is applied (naively exponentiating log-predictions is biased low).
 - **Distance-to-Thames as a deliberate coast proxy.** London is inland, so the brief's "distance-to-coast" resolves to distance-to-Thames, which carries a genuine riverside premium. It is labelled as a proxy, not literal coast.
 - **Synthetic-fixture testing.** Every module ships a smoke test against synthetic geometry with known properties, so the pipeline logic is verifiable independently of the large, externally-hosted real data.
 
@@ -197,4 +205,16 @@ reports/      metrics + figures
 
 ## Attribution
 
-Contains HM Land Registry data (c) Crown copyright and database right 2026. Contains OS data (c) Crown copyright and database right 2026. Contains Royal Mail data (c) Royal Mail copyright and database right 2026. Contains National Statistics data (c) Crown copyright and database right 2026. Licensed under the Open Government Licence v3.0. OpenStreetMap data (c) OpenStreetMap contributors, licensed under the ODbL.
+- Contains HM Land Registry data (c) Crown copyright and database right 2026
+- Contains OS data (c) Crown copyright and database right 2026
+- Contains Royal Mail data (c) Royal Mail copyright and database right 2026
+- Contains National Statistics data (c) Crown copyright and database right 2026
+- OpenStreetMap data (c) OpenStreetMap contributors
+
+The HM Land Registry, OS, Royal Mail, and ONS data are licensed under the Open Government Licence v3.0. OpenStreetMap data is licensed under the Open Database License (ODbL).
+
+## License
+
+The code in this repository is released under the Apache License 2.0. See [LICENSE](LICENSE) for details.
+
+Note: the licensing above applies to the project's own source code. The external datasets remain under their respective licences (see Attribution).
