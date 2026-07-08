@@ -1,0 +1,26 @@
+{
+  "n_lsoa": 4983,
+  "value_col": "median_log_price",
+  "global_moran_queen": {
+    "I": 0.6267965391540566,
+    "expected_I": -0.0002007226013649137,
+    "z_sim": 74.06883721401448,
+    "p_sim": 0.001,
+    "permutations": 999
+  },
+  "global_moran_knn": {
+    "I": 0.5739818421396252,
+    "expected_I": -0.0002007226013649137,
+    "z_sim": 82.65726572723914,
+    "p_sim": 0.001,
+    "permutations": 999
+  },
+  "lisa_cluster_counts": {
+    "HH": 631,
+    "HL": 28,
+    "LH": 55,
+    "LL": 1015,
+    "ns": 3254
+  },
+  "lisa_alpha": 0.05
+}

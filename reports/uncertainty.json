@@ -1,0 +1,19 @@
+{
+  "nominal_coverage": 0.9,
+  "random_split": {
+    "coverage_raw_quantile": 0.8914405313876251,
+    "coverage_cqr": 0.8991003037746544,
+    "median_width_log": 0.958756466272451,
+    "median_width_gbp": 464855.8976134527,
+    "conformal_Q_log": 0.010115963145945983,
+    "n_test": 68801
+  },
+  "spatial_holdout": {
+    "coverage_raw_quantile": 0.8113254167817329,
+    "coverage_cqr": 0.8186363570296943,
+    "median_width_log": 0.93958009382896,
+    "median_width_gbp": 506839.18355438864,
+    "conformal_Q_log": 0.007883564460044568,
+    "n_test": 68801
+  }
+}

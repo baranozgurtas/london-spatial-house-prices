@@ -1,0 +1,13 @@
+{
+  "residual_moran_I": 0.7187324991300359,
+  "residual_moran_p": 0.001,
+  "residual_autocorrelation_remains": true,
+  "n_lsoa": 4993,
+  "lisa_counts": {
+    "ns": 3091,
+    "LL": 1051,
+    "HH": 793,
+    "LH": 43,
+    "HL": 15
+  }
+}
