@@ -216,3 +216,19 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Project data (large, externally sourced; never commit) ---
+data/
+*.parquet
+*.gpkg
+
+# Keep figures and metric outputs for the README
+!reports/
+reports/*
+!reports/figures/
+reports/figures/*
+!reports/figures/*.png
+!reports/*.json
+!reports/*.csv
+
+.DS_Store
